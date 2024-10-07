@@ -59,6 +59,17 @@ class PersistanceManager {
     //    Delete
     func deleteMusic(music: Music) throws {
         context.delete(music)
+        
+        do {
+            let tagsToDelete = try self.fetchTimeStamps(fromMusic: music.name)
+            
+            for tag in tagsToDelete {
+                try self.deleteTimestamp(timestamp: tag)
+            }
+        } catch {
+            print("No tags to delete")
+        }
+        
         try context.save()
     }
     

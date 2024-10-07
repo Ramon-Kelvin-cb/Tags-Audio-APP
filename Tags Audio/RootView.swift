@@ -44,6 +44,11 @@ struct RootView: View {
                 NavigationLink(destination: ContentView(AudioManager: .init(music: music))) {
                     Text(music.name)
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        library.deleteMusic(music: music)
+                    } label: {Label("Delete", systemImage: "trash.fill")}
+                }
             }
                 
                 
