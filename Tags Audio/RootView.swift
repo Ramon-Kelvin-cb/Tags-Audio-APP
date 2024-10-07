@@ -11,10 +11,8 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     
     @ObservedObject var library : LibraryManager = LibraryManager()
-    var player: AVAudioPlayer?
     
     @State private var importing: Bool = false
-    @State private var url: URL?
     
     
     var body: some View {
@@ -24,31 +22,38 @@ struct RootView: View {
             }
             .fileImporter(
                 isPresented: $importing,
-                allowedContentTypes: [.mp3]) { result in
+                allowedContentTypes: [.audio]) { result in
                     switch result {
                     case .success(let file):
+                        let canAcess = file.startAccessingSecurityScopedResource()
+                        
+                        if !canAcess {
+                            print("Could not access file")
+                            return
+                        }
+                        
                         library.addMusic(path: file)
-                        var AudioManager: AudioController = AudioController(music: library.musics[0])
-                        AudioManager.play()
+                        file.stopAccessingSecurityScopedResource()
                     case .failure(let error):
                         print(error.localizedDescription)
                     }
                 }
             
-//            List { ForEach(library.musics) { music in
-//                NavigationLink(destination: ContentView(AudioManager: .init(music: music))) {
-//                    Text(music.path)
-//                }
-//            }
-              
             
-            
+            List { ForEach(library.musics) { music in
+                NavigationLink(destination: ContentView(AudioManager: .init(music: music))) {
+                    Text(music.name)
+                }
+            }
+                
+                
+                
             }.onAppear() {
-            if library.persistenceManager == nil {
-                library.persistenceManager = PersistanceManager(context: modelContext)
-                library.getPersistedData()
+                if library.persistenceManager == nil {
+                    library.persistenceManager = PersistanceManager(context: modelContext)
+                    library.getPersistedData()
+                }
             }
         }
     }
 }
-

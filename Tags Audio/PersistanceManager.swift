@@ -22,8 +22,9 @@ class PersistanceManager {
     
     
     //    Read
-    func fetchTimeStamps() throws -> [TimeStamp] {
-        let request = FetchDescriptor<TimeStamp>(sortBy: [SortDescriptor(\.time, order: .forward)])
+    func fetchTimeStamps(fromMusic musicName: String) throws -> [TimeStamp] {
+        let request = FetchDescriptor<TimeStamp>(predicate: #Predicate {$0.musicName == musicName},
+                                                 sortBy: [SortDescriptor(\.time, order: .forward)])
         return try self.context.fetch(request)
     }
     

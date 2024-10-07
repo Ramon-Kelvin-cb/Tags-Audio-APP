@@ -100,6 +100,9 @@ struct ContentView: View {
                 AudioManager.getPersistedData()
             }
         }
+        .onDisappear() {
+            AudioManager.stop()
+        }
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
             AudioManager.updatetTime()
         }

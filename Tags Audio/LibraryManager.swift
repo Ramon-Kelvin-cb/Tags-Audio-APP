@@ -19,14 +19,15 @@ class LibraryManager: ObservableObject {
     }
     
     func addMusic(path: (URL)) {
-        let newMusic: Music = Music(name: path.deletingPathExtension().lastPathComponent , path: path.absoluteString)
-        self.musics.append(newMusic)
-        self.musics.sort(by: {$1.name > $0.name})
-        
-        if let pm = self.persistenceManager {
-            try? pm.addMusic(music: newMusic)
+        if let localFile = self.copyToDocumentsDirectory(from: path) {
+            let newMusic: Music = Music(name: path.deletingPathExtension().lastPathComponent , path: localFile.absoluteString)
+            self.musics.append(newMusic)
+            self.musics.sort(by: {$1.name > $0.name})
+            
+            if let pm = self.persistenceManager {
+                try? pm.addMusic(music: newMusic)
+            }
         }
-        
     }
     
     func deleteMusic(music: Music) {
@@ -46,6 +47,24 @@ class LibraryManager: ObservableObject {
                 try? pm.updateMusic(music: chosen)
             }
             
+        }
+    }
+    
+    func copyToDocumentsDirectory(from url: URL) -> URL? {
+        let fileManager = FileManager.default
+        let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let destinationURL = documentsURL.appendingPathComponent(url.lastPathComponent)
+        
+        do {
+            if fileManager.fileExists(atPath: destinationURL.path) {
+                try fileManager.removeItem(at: destinationURL) // Remove o arquivo se já existir
+            }
+            try fileManager.copyItem(at: url, to: destinationURL) // Copia o arquivo para o diretório local
+            print("Arquivo copiado para: \(destinationURL.path)")
+            return destinationURL
+        } catch {
+            print("Erro ao copiar o arquivo: \(error.localizedDescription)")
+            return nil
         }
     }
     

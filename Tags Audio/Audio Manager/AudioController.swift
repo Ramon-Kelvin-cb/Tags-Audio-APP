@@ -36,7 +36,7 @@ class AudioController : AudioManagerProtocol, ObservableObject {
     
     func getPersistedData() {
         if let pm = self.persistenceManager {
-            if let ts = try? pm.fetchTimeStamps() {
+            if let ts = try? pm.fetchTimeStamps(fromMusic: self.music.name) {
                 self.timeStamps = ts
             }
         }
@@ -44,13 +44,13 @@ class AudioController : AudioManagerProtocol, ObservableObject {
     
     func setup() {
         self.setupAudioSession()
-//        guard let url =  URL(string: self.music.path) else {
-//            return
-//        }
-        guard let url = Bundle.main.url(forResource: self.music.path, withExtension: ".mp3") else {
+        guard let url =  URL(string: self.music.path) else {
+            print("Não teve sucesso na criação da URL")
             return
         }
         
+        let _ = url.startAccessingSecurityScopedResource()
+
         do {
             player = try AVAudioPlayer(contentsOf: url)
             player?.prepareToPlay()
@@ -59,6 +59,8 @@ class AudioController : AudioManagerProtocol, ObservableObject {
         } catch {
             print("Error loading audio: \(error)")
         }
+        
+        url.stopAccessingSecurityScopedResource()
     }
     
     func setupAudioSession() {
@@ -83,7 +85,7 @@ class AudioController : AudioManagerProtocol, ObservableObject {
     }
     
     func addTimeStamp() {
-        let timeStamp = TimeStamp(name: "", time: self.currentTime, timeMark: self.timeString(.current))
+        let timeStamp = TimeStamp(name: "", time: self.currentTime, timeMark: self.timeString(.current), musicName: self.music.name)
         self.timeStamps.append(timeStamp)
         self.timeStamps.sort(by: {$1.time > $0.time})
         
@@ -141,8 +143,9 @@ class AudioController : AudioManagerProtocol, ObservableObject {
         if !self.isPlaying {
             return
         }
+        
         self.isPlaying.toggle()
-        print("Audio Stopped")
+        self.player?.stop()
     }
 }
 

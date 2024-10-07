@@ -14,11 +14,13 @@ class TimeStamp: Identifiable {
     var name: String
     var time: Double
     var timeMark: String
+    var musicName: String
     
-    init(name: String, time: Double, timeMark: String) {
+    init(name: String, time: Double, timeMark: String, musicName: String) {
         self.name = name
         self.time = time
         self.timeMark = timeMark
+        self.musicName = musicName
     }
 }
 
